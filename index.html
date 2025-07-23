@@ -17,19 +17,33 @@
 
   <script>
     // This script will automatically open the Jira widget
-    function openJiraWidget() {
+    let jiraWidgetCheckInterval; // To store the interval ID
+    const maxRetries = 40; // Max attempts (e.g., 40 * 250ms = 10 seconds total)
+    let retryCount = 0;
+
+    function attemptOpenJiraWidget() {
+      // Check if the JiraServiceDesk object and its 'open' method are available
       if (typeof JiraServiceDesk !== 'undefined' && JiraServiceDesk.hasOwnProperty('open')) {
-        JiraServiceDesk.open();
+        JiraServiceDesk.open(); // Open the widget
+        clearInterval(jiraWidgetCheckInterval); // Stop checking once opened
+        console.log("Jira widget opened automatically.");
+      } else if (retryCount < maxRetries) {
+        retryCount++;
+        // console.log(`Attempting to open Jira widget: ${retryCount}/${maxRetries}`); // For debugging
       } else {
-        // If the widget isn't ready yet, try again after a short delay
-        // We'll keep the 500ms delay, as it's a good retry interval
-        setTimeout(openJiraWidget, 500); 
+        // If max retries reached and widget still not open, log a warning
+        console.warn("Jira widget did not open automatically after multiple retries. It might still be accessible via its button.");
+        clearInterval(jiraWidgetCheckInterval); // Stop checking
       }
     }
 
-    // Call the function after a very short initial delay to ensure the main Jira script has started.
-    // window.addEventListener('load', openJiraWidget); // Remove or comment this line
-    setTimeout(openJiraWidget, 250); // Try calling after 0.25 seconds
+    // Start checking every 250 milliseconds
+    jiraWidgetCheckInterval = setInterval(attemptOpenJiraWidget, 250);
+
+    // Optional: Add a final fallback if for some reason the interval doesn't clear (less common)
+    setTimeout(() => {
+      clearInterval(jiraWidgetCheckInterval);
+    }, maxRetries * 250 + 500); // Clear after max attempts plus a small buffer
   </script>
 
 </body>
