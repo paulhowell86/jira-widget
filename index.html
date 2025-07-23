@@ -3,48 +3,46 @@
 <head>
   <title>Jira Service Desk Widget</title>
   <style>
-    body { margin: 0; padding: 0; overflow: hidden; } /* Ensure no scrollbars */
+    body { margin: 0; padding: 0; overflow: hidden; }
     html, body { height: 100%; width: 100%; }
+
+    /* Hide the default "Contact Us" button */
+    iframe[data-testid="embedded-widget-frame"] {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
+  <!-- Jira Service Desk Widget -->
   <script
     data-jsd-embedded
-    data-key="f0dececa-a4a9-4b70-81fd-92d8432f40d7"  
+    data-key="f0dececa-a4a9-4b70-81fd-92d8432f40d7"
     data-base-url="https://jsd-widget.atlassian.com"
     src="https://jsd-widget.atlassian.com/assets/embed.js">
   </script>
 
   <script>
-    // This script will automatically open the Jira widget
-    let jiraWidgetCheckInterval; // To store the interval ID
-    const maxRetries = 40; // Max attempts (e.g., 40 * 250ms = 10 seconds total)
-    let retryCount = 0;
+    // Retry mechanism to open Jira widget and keep it open
+    let checkInterval = null;
+    let attempts = 0;
+    const maxAttempts = 40; // ~10 seconds at 250ms intervals
 
-    function attemptOpenJiraWidget() {
-      // Check if the JiraServiceDesk object and its 'open' method are available
-      if (typeof JiraServiceDesk !== 'undefined' && JiraServiceDesk.hasOwnProperty('open')) {
-        JiraServiceDesk.open(); // Open the widget
-        clearInterval(jiraWidgetCheckInterval); // Stop checking once opened
-        console.log("Jira widget opened automatically.");
-      } else if (retryCount < maxRetries) {
-        retryCount++;
-        // console.log(`Attempting to open Jira widget: ${retryCount}/${maxRetries}`); // For debugging
+    function openAndLockWidget() {
+      if (typeof JiraServiceDesk !== 'undefined' && typeof JiraServiceDesk.open === 'function') {
+        JiraServiceDesk.open(); // Open widget
+        clearInterval(checkInterval);
+        console.log("✅ Jira widget opened and set to remain expanded.");
       } else {
-        // If max retries reached and widget still not open, log a warning
-        console.warn("Jira widget did not open automatically after multiple retries. It might still be accessible via its button.");
-        clearInterval(jiraWidgetCheckInterval); // Stop checking
+        attempts++;
+        if (attempts >= maxAttempts) {
+          clearInterval(checkInterval);
+          console.warn("⚠ Jira widget did not auto-open after multiple attempts.");
+        }
       }
     }
 
-    // Start checking every 250 milliseconds
-    jiraWidgetCheckInterval = setInterval(attemptOpenJiraWidget, 250);
-
-    // Optional: Add a final fallback if for some reason the interval doesn't clear (less common)
-    setTimeout(() => {
-      clearInterval(jiraWidgetCheckInterval);
-    }, maxRetries * 250 + 500); // Clear after max attempts plus a small buffer
+    // Start checking every 250ms until widget is ready
+    checkInterval = setInterval(openAndLockWidget, 250);
   </script>
-
 </body>
 </html>
