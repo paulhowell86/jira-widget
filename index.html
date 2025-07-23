@@ -1,13 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Jira Service Desk Widget</title>
+  <title>Jira Widget Modal</title>
   <style>
-    body { margin: 0; padding: 0; overflow: hidden; }
-    html, body { height: 100%; width: 100%; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      background: #111;
+    }
 
-    /* Hide the default "Contact Us" button */
+    /* Overlay to dim the background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9998;
+    }
+
+    /* Jira iframe as modal */
     iframe[data-testid="embedded-widget-frame"] {
+      position: fixed !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      width: 80% !important;
+      max-width: 900px !important;
+      height: 80% !important;
+      z-index: 99999 !important;
+      border-radius: 12px !important;
+      border: none !important;
+      display: block !important;
+      background: white;
+      box-shadow: 0 0 40px rgba(0,0,0,0.6);
+    }
+
+    /* Hide the floating "Contact Us" button */
+    div[data-testid="widget-trigger"] {
       display: none !important;
     }
   </style>
@@ -22,27 +56,14 @@
   </script>
 
   <script>
-    // Retry mechanism to open Jira widget and keep it open
-    let checkInterval = null;
-    let attempts = 0;
-    const maxAttempts = 40; // ~10 seconds at 250ms intervals
-
-    function openAndLockWidget() {
-      if (typeof JiraServiceDesk !== 'undefined' && typeof JiraServiceDesk.open === 'function') {
-        JiraServiceDesk.open(); // Open widget
-        clearInterval(checkInterval);
-        console.log("✅ Jira widget opened and set to remain expanded.");
-      } else {
-        attempts++;
-        if (attempts >= maxAttempts) {
-          clearInterval(checkInterval);
-          console.warn("⚠ Jira widget did not auto-open after multiple attempts.");
-        }
+    // Auto open the widget when it's ready
+    let interval = setInterval(() => {
+      if (typeof JiraServiceDesk !== 'undefined' && JiraServiceDesk.open) {
+        JiraServiceDesk.open();
+        clearInterval(interval);
+        console.log("✅ Jira widget opened in modal view.");
       }
-    }
-
-    // Start checking every 250ms until widget is ready
-    checkInterval = setInterval(openAndLockWidget, 250);
+    }, 300);
   </script>
 </body>
 </html>
