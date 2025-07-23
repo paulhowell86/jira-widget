@@ -22,15 +22,13 @@
         JiraServiceDesk.open();
       } else {
         // If the widget isn't ready yet, try again after a short delay
-        setTimeout(openJiraWidget, 100); 
+        // Increased delay to 500ms (0.5 seconds)
+        setTimeout(openJiraWidget, 500); 
       }
     }
 
     // Call the function to open the widget when the page loads
-    // You might need to adjust the delay or the event depending on exact load times
     window.addEventListener('load', openJiraWidget);
-    // Or if 'load' is too late, you can try calling it directly or with a slight timeout
-    // setTimeout(openJiraWidget, 500); // Try calling after 0.5 seconds
   </script>
 
 </body>
