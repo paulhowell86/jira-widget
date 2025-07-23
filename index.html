@@ -14,5 +14,24 @@
     data-base-url="https://jsd-widget.atlassian.com"
     src="https://jsd-widget.atlassian.com/assets/embed.js">
   </script>
+
+  <script>
+    // This script will automatically open the Jira widget
+    function openJiraWidget() {
+      if (typeof JiraServiceDesk !== 'undefined' && JiraServiceDesk.hasOwnProperty('open')) {
+        JiraServiceDesk.open();
+      } else {
+        // If the widget isn't ready yet, try again after a short delay
+        setTimeout(openJiraWidget, 100); 
+      }
+    }
+
+    // Call the function to open the widget when the page loads
+    // You might need to adjust the delay or the event depending on exact load times
+    window.addEventListener('load', openJiraWidget);
+    // Or if 'load' is too late, you can try calling it directly or with a slight timeout
+    // setTimeout(openJiraWidget, 500); // Try calling after 0.5 seconds
+  </script>
+
 </body>
 </html>
